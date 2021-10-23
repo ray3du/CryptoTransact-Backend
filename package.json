@@ -4,7 +4,8 @@
   "description": "\"Backend for cryptotransact\"",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "author": "ray3du",
   "license": "ISC",
