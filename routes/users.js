@@ -1,5 +1,6 @@
 const User = require("../Models/User");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const express = require("express");
 const router = express.Router();
@@ -23,42 +24,63 @@ router.post('/users/', (req, res) => {
                 confirmPassword
             });
 
-            newUser.save()
-            .then(response => {
-                res.status(200).json({email: response.email, phone: response.phoneNumber});
+            User.findOne({ email })
+            .then(result => {
+                if (result === null) {
+                    newUser.save()
+                        .then(response => {
+                            res.status(200).json({success: { email: response.email, phone: response.phoneNumber}});
+                        })
+                        .catch(err => {
+                            res.status(200).json({msg: err._message});
+                        })
+                }else{
+                    res.status(200).json({msg: "User with that email exists"});
+                }
             })
             .catch(err => {
-                res.status(400).json(err._message);
+                res.status(200).json({msg: err});
             })
 
         })
         .catch(err => {
-            res.status(500).json(err);
+            res.status(200).json({msg: err});
         })
     })
     .catch(err => {
-        res.status(500).json(err);
+        res.status(500).json({msg: err });
     })
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
     const { email, password } = req.body;
+    console.log(req.body);
 
-    User.findOne({email})
+    await User.findOne({email})
     .then(data => {
-        bcrypt.compare(password, data.password)
-        .then(response => {
-            if(response){
-                const { email, password } = data;
-                
-                res.status(200).json(data);
-            }else{
-                res.status(400).json({msg: "Wrong password!"});
-            }
-        })
-        .catch(err => {
-            res.status(400).json(err);
-        })
+        if(data !== null){
+            bcrypt.compare(password, data.password)
+                .then(response => {
+                    if(response){
+                        const { email, password , phoneNumber} = data;
+                        
+                        const token = jwt.sign({user_id: email}, password, {
+                            expiresIn: "2h"
+                        })
+
+                        console.log(token);
+
+                        res.status(200).json({token: token, email: email, phoneNumber: phoneNumber});
+                    }else{
+                        res.status(200).json({msg: "Wrong password!"});
+                    }
+                })
+                .catch(err => {
+                    res.status(200).json(err);
+                })
+        }else{
+            res.status(401).json({msg: "User already exists!"})
+        }
     })
     .catch(err => {
         console.error(err)
