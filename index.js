@@ -10,7 +10,10 @@ const app = express();
 const indexRoute = require("./routes/index");
 const usersRoute = require("./routes/users.js");
 
-mongoose.connect(process.env.MONGO_URI)
+const MONGO_DB = "mongodb+srv://ray3du:CgU17EDwS2mXMIjL@cryptotransact.gpbmq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const DB = process.env.MONGO_URI || MONGO_DB;
+
+mongoose.connect(DB)
 .then(() => {
     console.log("Mongodb connected");
 })
