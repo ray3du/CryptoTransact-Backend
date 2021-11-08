@@ -1,7 +1,7 @@
 const User = require("../Models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const ProtonMail = require("protonmail-api");
 const { uuid } = require('uuidv4');
 
 const express = require("express");
@@ -116,75 +116,41 @@ router.post("/forgot", async (req, res) => {
     const { email } = req.body;
     const newPassword = uuid();
 
-    console.log(`New password: ${newPassword}`);
+    console.log(`New password: ${email}`);
     await User.findOne({email})
     .then(result => {
         if (result != null) {
+
             (async () => {
                 const pm = await ProtonMail.connect({
-                  username: config.username,
-                  password: config.password
+                    username: config.username,
+                    password: config.password
                 })
-                .then(data => {
-                    console.log(data);
-                })
-                .catch(err => console.error(err));
               
                 await pm.sendEmail({
-                  to: email,
-                  subject: 'Password reset',
-                  body: `New temporary password: ${newPassword}`
+                    to: email,
+                    subject: 'Password reset',
+                    body: `New temporary password: ${newPassword}`
+                })
+
+                await User.findOneAndUpdate({email}, {$set: { password: newPassword }}, {new: true})
+                .then(result => {
+                    if (result != null) {
+                        res.status(200).json({msg: "Password reset successfull", email: result.email});
+                    } else {
+                        res.status(200).json({ error: 'Unable to update db' });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
                 })
               
                 pm.close()
               })()
+        
         } else {
             res.status(200).json({ msg: "User does not exist" });
         }
-        // if (result != null) {
-        //     const transport = nodemailer.createTransport({
-        //         port: 1025,
-        //         secure: false,
-        //         auth: {
-        //             user: config.username,
-        //             pass: config.password
-        //         },
-        //         logger: true,
-        //         debug: true,
-        //         ignoreTLS: true, 
-        //         tls: {
-        //             rejectUnauthorized: false
-        //         }
-        //     });
-
-        //     const mailOptions = {
-        //         from: config.admin,
-        //         to: email,
-        //         subject: 'Password reset',
-        //         text: `New temporary password: ${newPassword}`
-        //     };
-
-        //     transport.sendMail(mailOptions, (error, data) => {
-        //         if (error) {
-        //             console.error(error);
-        //         } else {
-        //             console.log(data);
-        //             User.findOneAndUpdate({email}, {$set: { password: newPassword }}, {new: true})
-        //             .then(result => {
-        //                 if (result != null) {
-        //                     res.status(200).json(result);
-        //                 } else {
-        //                     res.status(200).json({ error: 'Unable to update db' });
-        //                 }
-        //             })
-        //             .catch(err => {
-        //                 console.error(err);
-        //             })
-        //         }
-        //     });
-        // }else{
-        //     res.status(200).json({ msg: "User does not exist" });
-        // }
     })
     .catch(err => {
         console.error(err);
