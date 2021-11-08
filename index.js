@@ -12,8 +12,8 @@ const indexRoute = require("./routes/index");
 const usersRoute = require("./routes/users.js");
 
 const MONGO_DB = config.MONGO_DB;
-// const DB = process.env.MONGO_DB || MONGO_DB;
-const DB = process.env.MONGO_URI1
+const DB = process.env.MONGO_DB || MONGO_DB;
+// const DB = process.env.MONGO_URI1
 
 mongoose.connect(DB)
 .then(() => {
