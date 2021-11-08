@@ -2,6 +2,7 @@ if(process.env.NODE_ENV !== "production"){
     require("dotenv").config();
 }
 
+const config = require("./Config/config");
 const express = require("express");
 const mongoose = require("mongoose");
 
@@ -10,8 +11,9 @@ const app = express();
 const indexRoute = require("./routes/index");
 const usersRoute = require("./routes/users.js");
 
-const MONGO_DB = "mongodb+srv://ray3du:CgU17EDwS2mXMIjL@cryptotransact.gpbmq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-const DB = process.env.MONGO_URI || MONGO_DB;
+const MONGO_DB = config.MONGO_DB;
+// const DB = process.env.MONGO_DB || MONGO_DB;
+const DB = process.env.MONGO_URI1
 
 mongoose.connect(DB)
 .then(() => {

@@ -16,6 +16,15 @@ const UserSchema = mongoose.Schema({
     confirmPassword: {
         required: true,
         type: String
+    },
+    loggedIn: {
+        required: true,
+        type: Boolean,
+        default: false
+    },
+    createdDate: {
+        type: Date,
+        default: Date.now()
     }
 });
 
